@@ -10,7 +10,6 @@
 stratum_UI <- function(id) {
   ns <- NS(id)
   tagList(
-    info_tag("stratum"),
     sidebarLayout(
       sidebarPanel(
         selectizeInput(ns("group"),

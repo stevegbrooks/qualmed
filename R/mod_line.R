@@ -10,7 +10,6 @@
 line_UI <- function(id) {
   ns <- NS(id)
   tagList(
-    info_tag("line"),
     sidebarLayout(
       sidebarPanel(
         selectizeInput(ns("group"),

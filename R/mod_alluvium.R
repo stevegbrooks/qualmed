@@ -9,21 +9,21 @@
 #' @export
 
 alluvium_UI <- function(id) {
-  ns <- NS(id)
-  tagList(
-    info_tag("alluvium"),
-    sidebarLayout(
-      sidebarPanel(
-        selectizeInput(ns("group"),
-                       label = "Select a grouping variable",
-                       choices = c("func", "TA", "ROPU"),
-                       selected = "func",
-                       multiple = FALSE
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
+        shiny::selectizeInput(
+          ns("group"),
+          label = "Select a grouping variable",
+          choices = c("func", "TA", "ROPU"),
+          selected = "func",
+          multiple = FALSE
         ),
         width = 2
       ),
-      mainPanel(
-        plotOutput(
+      shiny::mainPanel(
+        shiny::plotOutput(
           ns("plot")
         ),
         width = 10
