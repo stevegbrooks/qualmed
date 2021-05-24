@@ -65,12 +65,12 @@ line_server <- function(id, ds) {
 
     by_source_group_year <- shiny::reactive({
       ds() %>%
-        dplyr::count(source, group = get(input$group), year) %>%
+        dplyr::count(facet = get(input$facet), group = get(input$group), year) %>%
         dplyr::filter(!is.na(group))
-    }) %>% shiny::debounce(5000)
+    })
 
     observeEvent(ds(), {
-      choices <- names(ds())
+      choices <- sort(names(ds()))
       updateSelectizeInput(inputId = "group",
                            choices = choices,
                            selected = input$group)
@@ -87,18 +87,19 @@ line_server <- function(id, ds) {
           x = year,
           y = n,
           color = group,
+          group = group,
           text = paste("group:", group)
         )
       ) +
         ggplot2::theme_bw() +
         ggplot2::theme(
           legend.position = "top",
-          legend.text = ggplot2::element_text(size = 10),
-          axis.text = ggplot2::element_text(size = 10)
+          legend.text = ggplot2::element_text(size = 12),
+          axis.text = ggplot2::element_text(size = 12)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0),
                        strip.text.x = ggplot2::element_text(size = 12)) +
-        ggplot2::facet_wrap(~ get(input$facet), scales = input$scales) +
+        ggplot2::facet_wrap(~ facet, scales = input$scales) +
         ggplot2::geom_line()
 
       plotly::ggplotly(

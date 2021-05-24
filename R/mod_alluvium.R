@@ -58,10 +58,10 @@ alluvium_server <- function(id, ds) {
       ds() %>%
         dplyr::count(year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
-    }) %>% shiny::debounce(5000)
+    })
 
     shiny::observeEvent(ds(), {
-      choices <- names(ds())
+      choices <- sort(names(ds()))
       shiny::updateSelectizeInput(inputId = "group",
                                   choices = choices,
                                   selected = input$group)
@@ -77,14 +77,11 @@ alluvium_server <- function(id, ds) {
           alpha = .75,
           decreasing = FALSE
         ) +
-        ggplot2::scale_x_continuous(
-          breaks = seq(2014, 2020, 1)
-        ) +
         ggplot2::theme_bw() +
         ggplot2::theme(
           legend.position = "top",
-          legend.text = ggplot2::element_text(size = 14),
-          axis.text = ggplot2::element_text(size = 14)
+          legend.text = ggplot2::element_text(size = 18),
+          axis.text = ggplot2::element_text(size = 16)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0))
     }, height = function() {

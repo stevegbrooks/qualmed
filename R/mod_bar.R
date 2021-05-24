@@ -67,10 +67,10 @@ bar_server <- function(id, ds) {
       ds() %>%
         dplyr::count(facet = get(input$facet), year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
-    }) %>% shiny::debounce(5000)
+    })
 
     shiny::observeEvent(ds(), {
-      choices <- names(ds())
+      choices <- sort(names(ds()))
       shiny::updateSelectizeInput(inputId = "group",
                                   choices = choices,
                                   selected = input$group)
@@ -91,15 +91,15 @@ bar_server <- function(id, ds) {
         ggplot2::geom_col() +
         ggplot2::facet_grid(~ facet) +
         ggplot2::geom_text(
-          size = 3,
+          size = 6,
           position = ggplot2::position_stack(vjust = 0.5)
         ) +
         ggplot2::theme_bw() +
         ggplot2::theme(
           legend.position = "top",
-          legend.text = ggplot2::element_text(size = 14),
-          axis.text = ggplot2::element_text(size = 12),
-          strip.text.x = ggplot2::element_text(size = 14)
+          legend.text = ggplot2::element_text(size = 18),
+          axis.text = ggplot2::element_text(size = 16),
+          strip.text.x = ggplot2::element_text(size = 16)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0))
     }, height = function() {
