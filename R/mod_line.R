@@ -9,24 +9,38 @@
 
 line_UI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
-    shiny::verticalLayout(
-      shiny::inputPanel(
-        shiny::selectizeInput(ns("group"),
-                       label = "Select a grouping variable",
-                       choices = "ROPU",
-                       selected = "ROPU",
-                       multiple = FALSE
+  shiny::fluidPage(
+    shiny::tagList(
+      shiny::sidebarLayout(
+        position = "right",
+        shiny::sidebarPanel(
+          shiny::selectizeInput(ns("group"),
+                                label = "Group variable",
+                                choices = "ROPU",
+                                selected = "ROPU",
+                                multiple = FALSE
+          ),
+          shiny::selectizeInput(ns("facet"),
+                                label = "Facet variable",
+                                choices = "source",
+                                selected = "source",
+                                multiple = FALSE
+          ),
+          shiny::selectizeInput(ns("scales"),
+                                label = "Y-axis fixed or free",
+                                choices = c("fixed", "free_y"),
+                                selected = "fixed"
+          ),
+          width = 2
         ),
-        shiny::selectizeInput(ns("scales"),
-                       label = "Select y-axis fixed or free",
-                       choices = c("fixed", "free_y"),
-                       selected = "fixed"
-        )
-      ),
-      shiny::mainPanel(
-        plotly::plotlyOutput(
-          ns("plot")
+        shiny::mainPanel(
+          shiny::fillCol(
+            plotly::plotlyOutput(
+              ns("plot"),
+              width = "auto"
+            )
+          ),
+          width = 10
         )
       )
     )
@@ -53,13 +67,16 @@ line_server <- function(id, ds) {
       ds() %>%
         dplyr::count(source, group = get(input$group), year) %>%
         dplyr::filter(!is.na(group))
-    }) %>% shiny::debounce(1000)
+    }) %>% shiny::debounce(5000)
 
     observeEvent(ds(), {
       choices <- names(ds())
       updateSelectizeInput(inputId = "group",
                            choices = choices,
                            selected = input$group)
+      updateSelectizeInput(inputId = "facet",
+                           choices = choices,
+                           selected = input$facet)
     })
 
     output$plot <- plotly::renderPlotly({
@@ -79,14 +96,15 @@ line_server <- function(id, ds) {
           legend.text = ggplot2::element_text(size = 10),
           axis.text = ggplot2::element_text(size = 10)
         ) +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0)) +
-        ggplot2::facet_wrap(~ source, scales = input$scales) +
+        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0),
+                       strip.text.x = ggplot2::element_text(size = 12)) +
+        ggplot2::facet_wrap(~ get(input$facet), scales = input$scales) +
         ggplot2::geom_line()
 
       plotly::ggplotly(
         plot,
         tooltip = c("y", "x", "text"),
-        width = 1400, height = 700
+        height = 800
       )
     })
   }
