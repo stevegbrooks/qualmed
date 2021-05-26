@@ -12,6 +12,8 @@ Imports:
     ggplot2,
     plotly,
     dplyr,
-    ggalluvial
+    ggalluvial,
+    viridis,
+    ggfittext
 Encoding: UTF-8
 LazyData: true

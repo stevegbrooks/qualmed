@@ -23,18 +23,23 @@ bar_UI <- function(id) {
         shiny::selectizeInput(
           ns("facet"),
           label = "Facet variable",
-          choices = "ROPU",
-          selected = "ROPU",
+          choices = "func_dicho",
+          selected = "func_dicho",
           multiple = FALSE
+        ),
+        shiny::selectizeInput(
+          ns("scales"),
+          label = "Y-axis fixed or free",
+          choices = c("fixed", "free_y"),
+          selected = "fixed"
         ),
         width = 2
       ),
       shiny::mainPanel(
         shiny::fillCol(
-          shiny::plotOutput(
+          plotly::plotlyOutput(
             ns("plot"),
-            width = "100%",
-            height = "auto"
+            width = "auto"
           )
         ),
         width = 10
@@ -79,32 +84,37 @@ bar_server <- function(id, ds) {
                                   selected = input$facet)
     })
 
-    output$plot <- shiny::renderPlot({
-      ggplot2::ggplot(
+    output$plot <- plotly::renderPlotly({
+      req(by_year_group())
+      plot <- ggplot2::ggplot(
         by_year_group(),
         ggplot2::aes(
           fill = group,
-          label = group,
           y = n,
-          x = year)
+          x = year,
+          label = group,
+          text = paste("group:", group))
       ) +
         ggplot2::geom_col() +
-        ggplot2::facet_grid(~ facet) +
-        ggplot2::geom_text(
-          size = 6,
-          position = ggplot2::position_stack(vjust = 0.5)
-        ) +
+        ggplot2::facet_grid(~ facet, scales = input$scales) +
+        ggfittext::geom_fit_text() +
+        # ggplot2::geom_text(
+        #   size = 6,
+        #   position = ggplot2::position_stack(vjust = 0.5)
+        # ) +
+        ggplot2::scale_fill_discrete(drop = FALSE) +
         ggplot2::theme_bw() +
         ggplot2::theme(
           legend.position = "top",
-          legend.text = ggplot2::element_text(size = 18),
-          axis.text = ggplot2::element_text(size = 16),
-          strip.text.x = ggplot2::element_text(size = 16)
+          legend.text = ggplot2::element_text(size = 12),
+          axis.text = ggplot2::element_text(size = 12)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0))
-    }, height = function() {
-      plot_id <- paste0("output_", session$ns("plot"), "_width")
-      session$clientData[[plot_id]] * .6
+      plotly::ggplotly(
+        plot,
+        tooltip = c("y", "x", "text"),
+        height = 800
+      )
     })
   }
   return(shiny::moduleServer(id, module))

@@ -14,22 +14,25 @@ line_UI <- function(id) {
       shiny::sidebarLayout(
         position = "right",
         shiny::sidebarPanel(
-          shiny::selectizeInput(ns("group"),
-                                label = "Group variable",
-                                choices = "ROPU",
-                                selected = "ROPU",
-                                multiple = FALSE
+          shiny::selectizeInput(
+            ns("group"),
+            label = "Group variable",
+            choices = "ROPU",
+            selected = "ROPU",
+            multiple = FALSE
           ),
-          shiny::selectizeInput(ns("facet"),
-                                label = "Facet variable",
-                                choices = "source",
-                                selected = "source",
-                                multiple = FALSE
+          shiny::selectizeInput(
+            ns("facet"),
+            label = "Facet variable",
+            choices = "func_dicho",
+            selected = "func_dicho",
+            multiple = FALSE
           ),
-          shiny::selectizeInput(ns("scales"),
-                                label = "Y-axis fixed or free",
-                                choices = c("fixed", "free_y"),
-                                selected = "fixed"
+          shiny::selectizeInput(
+            ns("scales"),
+            label = "Y-axis fixed or free",
+            choices = c("fixed", "free_y"),
+            selected = "fixed"
           ),
           width = 2
         ),
@@ -100,6 +103,7 @@ line_server <- function(id, ds) {
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0),
                        strip.text.x = ggplot2::element_text(size = 12)) +
         ggplot2::facet_wrap(~ facet, scales = input$scales) +
+        ggplot2::scale_color_viridis_d(option = "C", drop = FALSE) +
         ggplot2::geom_line()
 
       plotly::ggplotly(

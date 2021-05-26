@@ -9,7 +9,7 @@
 #' @import viridis
 #' @export
 
-alluvium_UI <- function(id) {
+flowbar_UI <- function(id) {
   ns <- shiny::NS(id)
   shiny::tagList(
     shiny::sidebarLayout(
@@ -18,8 +18,8 @@ alluvium_UI <- function(id) {
         shiny::selectizeInput(
           ns("group"),
           label = "Select a grouping variable",
-          choices = "func",
-          selected = "func",
+          choices = "Coding_Level_1",
+          selected = "Coding_Level_1",
           multiple = FALSE
         ),
         width = 2
@@ -38,7 +38,7 @@ alluvium_UI <- function(id) {
   )
 }
 
-#' @describeIn alluvium_UI
+#' @describeIn flowbar_UI
 #'
 #' Line Plot Server function
 #'
@@ -49,8 +49,9 @@ alluvium_UI <- function(id) {
 #' @import dplyr
 #' @import plotly
 #' @import ggplot2
+#' @import ggalluvial
 #' @export
-alluvium_server <- function(id, ds) {
+flowbar_server <- function(id, ds) {
   module <- function(input, output, session) {
     ns <- session$ns
 
@@ -69,24 +70,28 @@ alluvium_server <- function(id, ds) {
     })
 
     output$plot <- shiny::renderPlot({
+
       ggplot2::ggplot(
         data = by_year_group(),
-        ggplot2::aes(x = year, y = n, alluvium = group)
+        ggplot2::aes(
+          x = year,
+          y = n,
+          stratum = group,
+          alluvium = group,
+          fill = group,
+          label = group
+        )
       ) +
-        ggalluvial::geom_alluvium(
-          ggplot2::aes(fill = group, colour = group, label = group),
-          alpha = .6,
-          decreasing = FALSE
-        ) +
+        ggalluvial::geom_flow() +
+        ggalluvial::geom_stratum(alpha = .5) +
+        ggfittext::geom_fit_text(stat = "stratum", width = .8) +
         ggplot2::theme_bw() +
         ggplot2::theme(
-          legend.position = "top",
-          legend.text = ggplot2::element_text(size = 18),
+          legend.position = "none",
           axis.text = ggplot2::element_text(size = 16)
         ) +
-        ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0)) +
-        ggplot2::scale_color_discrete(drop = FALSE) +
-        ggplot2::scale_fill_discrete(drop = FALSE)
+        ggplot2::scale_color_viridis_d(drop = FALSE) +
+        ggplot2::scale_fill_viridis_d(drop = FALSE)
     }, height = function() {
       plot_id <- paste0("output_", session$ns("plot"), "_width")
       session$clientData[[plot_id]] * .6
@@ -96,11 +101,11 @@ alluvium_server <- function(id, ds) {
   return(shiny::moduleServer(id, module))
 }
 
-mod_alluvium <- function(dataset, module_id) {
+mod_flowbar <- function(dataset, module_id) {
   mod <- list(
-    ui = alluvium_UI,
+    ui = flowbar_UI,
     server = rlang::expr(
-      qualmed::alluvium_server(
+      qualmed::flowbar_server(
         !!module_id,
         ds = shiny::reactive(filtered_datasets()[[!!dataset]])
       )
