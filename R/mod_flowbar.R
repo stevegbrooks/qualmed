@@ -54,7 +54,7 @@ flowbar_UI <- function(id) {
 flowbar_server <- function(id, ds) {
   module <- function(input, output, session) {
     ns <- session$ns
-
+    StatStratum <- ggalluvial::StatStratum
     by_year_group <- shiny::reactive({
       shiny::req(input$group)
       ds() %>%
