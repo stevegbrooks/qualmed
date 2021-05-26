@@ -116,6 +116,8 @@ line_server <- function(id, ds) {
   return(shiny::moduleServer(id, module))
 }
 
+#' @export
+
 mod_line <- function(dataset, module_id) {
   mod <- list(
     ui = line_UI,

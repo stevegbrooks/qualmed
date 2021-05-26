@@ -100,7 +100,7 @@ flowbar_server <- function(id, ds) {
   }
   return(shiny::moduleServer(id, module))
 }
-
+#' @export
 mod_flowbar <- function(dataset, module_id) {
   mod <- list(
     ui = flowbar_UI,

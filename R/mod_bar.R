@@ -119,7 +119,7 @@ bar_server <- function(id, ds) {
   }
   return(shiny::moduleServer(id, module))
 }
-
+#' @export
 mod_bar <- function(dataset, module_id) {
   mod <- list(
     ui = bar_UI,

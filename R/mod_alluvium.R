@@ -95,7 +95,7 @@ alluvium_server <- function(id, ds) {
   }
   return(shiny::moduleServer(id, module))
 }
-
+#' @export
 mod_alluvium <- function(dataset, module_id) {
   mod <- list(
     ui = alluvium_UI,
