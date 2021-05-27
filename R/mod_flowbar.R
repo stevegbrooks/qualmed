@@ -49,7 +49,6 @@ flowbar_UI <- function(id) {
 #' @import dplyr
 #' @import plotly
 #' @import ggplot2
-#' @import ggalluvial
 #' @export
 flowbar_server <- function(id, ds) {
   module <- function(input, output, session) {

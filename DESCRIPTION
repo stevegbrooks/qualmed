@@ -1,12 +1,11 @@
 Package: qualmed
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Shiny modules for visualizing compliance data
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Steven Brooks
+Maintainer: Steven Brooks <steven.brooks@boehringer-ingelheim.com>
+Description: Shiny modules for visualizing compliance data
+License: MIT
 Imports:
     shiny,
     ggplot2,
