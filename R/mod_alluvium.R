@@ -80,6 +80,8 @@ alluvium_server <- function(id, ds) {
       node_width <- 1 / 4
       alluvium_width <- 1 / 3
 
+      pdf(file = NULL)
+
       p <- ggplot2::ggplot(
         data = by_year_group(),
         ggplot2::aes(x = year, y = n, alluvium = group)
