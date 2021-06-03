@@ -97,11 +97,6 @@ bar_server <- function(id, ds) {
       ) +
         ggplot2::geom_col() +
         ggplot2::facet_grid(~ facet, scales = input$scales) +
-        ggfittext::geom_fit_text() +
-        # ggplot2::geom_text(
-        #   size = 6,
-        #   position = ggplot2::position_stack(vjust = 0.5)
-        # ) +
         ggplot2::scale_fill_discrete(drop = FALSE) +
         ggplot2::theme_bw() +
         ggplot2::theme(
