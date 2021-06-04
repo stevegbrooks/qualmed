@@ -71,8 +71,9 @@ bar_server <- function(id, ds) {
       req(input$group)
       ds() %>%
         dplyr::count(facet = get(input$facet), year, group = get(input$group)) %>%
-        dplyr::filter(!is.na(group))
-    })
+        dplyr::filter(!is.na(group)) %>%
+        dplyr::filter(!is.na(facet))
+    }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
       choices <- sort(names(ds()))

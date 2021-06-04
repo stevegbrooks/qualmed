@@ -63,7 +63,7 @@ alluvium_server <- function(id, ds) {
       ds() %>%
         dplyr::count(year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
-    })
+    }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
       choices <- sort(names(ds()))
@@ -98,8 +98,8 @@ alluvium_server <- function(id, ds) {
           axis.text = ggplot2::element_text(size = 16)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0)) +
-        ggplot2::scale_color_discrete(drop = FALSE) +
-        ggplot2::scale_fill_discrete(drop = FALSE)
+        ggplot2::scale_color_viridis_d(option = "C") +
+        ggplot2::scale_fill_viridis_d(option = "C")
 
       pbuilt <- ggplot2::ggplot_build(p)
 

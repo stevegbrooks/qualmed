@@ -60,7 +60,7 @@ flowbar_server <- function(id, ds) {
       ds() %>%
         dplyr::count(year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
-    })
+    }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
       choices <- sort(names(ds()))
@@ -70,18 +70,6 @@ flowbar_server <- function(id, ds) {
     })
 
     output$plot <- shiny::renderPlot({
-      # vaccinations <- ggalluvial::vaccinations
-      # vaccinations <- transform(vaccinations,
-      #                           response = factor(vaccinations$response, rev(levels(vaccinations$response))))
-      # ggplot2::ggplot(vaccinations,
-      #        ggplot2::aes(x = survey, stratum = response, alluvium = subject, y = freq,
-      #            fill = response, label = response)) +
-      #   ggplot2::scale_x_discrete(expand = c(.1, 0)) +
-      #   ggalluvial::geom_flow(width = 1/4) +
-      #   ggalluvial::geom_stratum(alpha = .5, width = 1/4) +
-      #   ggfittext::geom_fit_text(stat = "stratum", width = 1/4, min.size = 3) +
-      #   ggplot2::theme(legend.position = "none") +
-      #   ggplot2::ggtitle("vaccination survey responses", "labeled using `geom_fit_text()`")
       ggplot2::ggplot(
         data = by_year_group(),
          ggplot2::aes(

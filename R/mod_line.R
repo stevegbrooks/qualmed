@@ -28,11 +28,10 @@ line_UI <- function(id) {
             selected = "func_dicho",
             multiple = FALSE
           ),
-          shiny::selectizeInput(
-            ns("scales"),
-            label = "Y-axis fixed or free",
-            choices = c("fixed", "free_y"),
-            selected = "fixed"
+          shiny::sliderInput(
+            ns("yslider"),
+            label = "Y-axis limits",
+            min = 0, max = 300, value = c(0, 200)
           ),
           width = 2
         ),
@@ -67,19 +66,31 @@ line_server <- function(id, ds) {
     ns <- session$ns
 
     by_source_group_year <- shiny::reactive({
+      shiny::req(input$facet)
+      shiny::req(input$group)
       ds() %>%
         dplyr::count(facet = get(input$facet), group = get(input$group), year) %>%
-        dplyr::filter(!is.na(group))
+        dplyr::filter(!is.na(group)) %>%
+        dplyr::filter(!is.na(facet))
+    }) %>% shiny::debounce(1500)
+
+    shiny::observeEvent(ds(), {
+      choices <- sort(names(ds()))
+      shiny::updateSelectizeInput(inputId = "group",
+                                  choices = choices,
+                                  selected = input$group)
+      shiny::updateSelectizeInput(inputId = "facet",
+                                  choices = choices,
+                                  selected = input$facet)
     })
 
-    observeEvent(ds(), {
-      choices <- sort(names(ds()))
-      updateSelectizeInput(inputId = "group",
-                           choices = choices,
-                           selected = input$group)
-      updateSelectizeInput(inputId = "facet",
-                           choices = choices,
-                           selected = input$facet)
+    shiny::observeEvent(shiny::req(by_source_group_year()), {
+      rng <- c(min(by_source_group_year()[["n"]]),
+               max(by_source_group_year()[["n"]]))
+      shiny::updateSliderInput(inputId = "yslider",
+                               value = rng,
+                               min = rng[1],
+                               max = rng[2])
     })
 
     output$plot <- plotly::renderPlotly({
@@ -102,10 +113,10 @@ line_server <- function(id, ds) {
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0),
                        strip.text.x = ggplot2::element_text(size = 12)) +
-        ggplot2::facet_wrap(~ facet, scales = input$scales) +
+        ggplot2::facet_wrap(~ facet) +
         ggplot2::scale_color_viridis_d(option = "C", drop = FALSE) +
-        ggplot2::geom_line()
-
+        ggplot2::geom_line() +
+        ggplot2::ylim(input$yslider[1], input$yslider[2])
       plotly::ggplotly(
         plot,
         tooltip = c("y", "x", "text"),
