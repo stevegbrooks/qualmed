@@ -27,12 +27,6 @@ bar_UI <- function(id) {
           selected = "func_dicho",
           multiple = FALSE
         ),
-        shiny::selectizeInput(
-          ns("scales"),
-          label = "Y-axis fixed or free",
-          choices = c("fixed", "free_y"),
-          selected = "fixed"
-        ),
         width = 2
       ),
       shiny::mainPanel(
@@ -97,7 +91,7 @@ bar_server <- function(id, ds) {
           text = paste("group:", group))
       ) +
         ggplot2::geom_col() +
-        ggplot2::facet_grid(~ facet, scales = input$scales) +
+        ggplot2::facet_wrap(~ facet) +
         ggplot2::scale_fill_discrete(drop = FALSE) +
         ggplot2::theme_bw() +
         ggplot2::theme(
@@ -106,6 +100,10 @@ bar_server <- function(id, ds) {
           axis.text = ggplot2::element_text(size = 12)
         ) +
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0))
+      if (length(dev.list()) > 0) {
+        print(paste("mod_bar dev.list:", dev.list()))
+        dev.off()
+      }
       plotly::ggplotly(
         plot,
         tooltip = c("y", "x", "text"),

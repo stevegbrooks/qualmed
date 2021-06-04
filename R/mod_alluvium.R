@@ -91,6 +91,7 @@ alluvium_server <- function(id, ds) {
           alpha = .6,
           decreasing = FALSE
         ) +
+        ggplot2::scale_linetype_manual(values = c("blank", "solid")) +
         ggplot2::theme_bw() +
         ggplot2::theme(
           legend.position = "top",

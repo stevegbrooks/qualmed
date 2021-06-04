@@ -72,7 +72,7 @@ flowbar_server <- function(id, ds) {
     output$plot <- shiny::renderPlot({
       ggplot2::ggplot(
         data = by_year_group(),
-         ggplot2::aes(
+        ggplot2::aes(
           x = year,
           y = n,
           stratum = group,

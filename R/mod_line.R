@@ -117,6 +117,10 @@ line_server <- function(id, ds) {
         ggplot2::scale_color_viridis_d(option = "C", drop = FALSE) +
         ggplot2::geom_line() +
         ggplot2::ylim(input$yslider[1], input$yslider[2])
+      if (length(dev.list()) > 0) {
+        print(paste("mod_line dev.list:", dev.list()))
+        dev.off()
+      }
       plotly::ggplotly(
         plot,
         tooltip = c("y", "x", "text"),
