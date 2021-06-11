@@ -10,40 +10,42 @@
 line_UI <- function(id) {
   ns <- shiny::NS(id)
   shiny::fluidPage(
-    shiny::tagList(
-      shiny::sidebarLayout(
-        position = "right",
-        shiny::sidebarPanel(
-          shiny::selectizeInput(
-            ns("group"),
-            label = "Group variable",
-            choices = "ROPU",
-            selected = "ROPU",
-            multiple = FALSE
-          ),
-          shiny::selectizeInput(
-            ns("facet"),
-            label = "Facet variable",
-            choices = "func_dicho",
-            selected = "func_dicho",
-            multiple = FALSE
-          ),
-          shiny::sliderInput(
-            ns("yslider"),
-            label = "Y-axis limits",
-            min = 0, max = 300, value = c(0, 200)
-          ),
-          width = 2
+    shiny::sidebarLayout(
+      position = "right",
+      shiny::sidebarPanel(
+        shiny::selectizeInput(
+          ns("group"),
+          label = "Group variable",
+          choices = "ROPU",
+          selected = "ROPU",
+          multiple = FALSE
         ),
-        shiny::mainPanel(
-          shiny::fillCol(
-            plotly::plotlyOutput(
-              ns("plot"),
-              width = "auto"
-            )
-          ),
-          width = 10
-        )
+        shiny::selectizeInput(
+          ns("facet"),
+          label = "Facet variable",
+          choices = "is_clinops",
+          selected = "is_clinops",
+          multiple = FALSE
+        ),
+        shiny::radioButtons(
+          ns("time"),
+          label = "By year or by month",
+          choices = c("year", "year_month"),
+          selected = "year"
+        ),
+        shiny::sliderInput(
+          ns("yslider"),
+          label = "Y-axis limits",
+          min = 0, max = 300, value = c(0, 200)
+        ),
+        width = 2
+      ),
+      shiny::mainPanel(
+        plotly::plotlyOutput(
+          ns("plot"),
+          width = "auto",
+        ),
+        width = 10
       )
     )
   )
@@ -65,11 +67,12 @@ line_server <- function(id, ds) {
 
     ns <- session$ns
 
-    by_source_group_year <- shiny::reactive({
+    by_facet_group_time <- shiny::reactive({
       shiny::req(input$facet)
       shiny::req(input$group)
+      shiny::req(input$time)
       ds() %>%
-        dplyr::count(facet = get(input$facet), group = get(input$group), year) %>%
+        dplyr::count(facet = get(input$facet), group = get(input$group), time = get(input$time)) %>%
         dplyr::filter(!is.na(group)) %>%
         dplyr::filter(!is.na(facet))
     }) %>% shiny::debounce(1500)
@@ -84,9 +87,9 @@ line_server <- function(id, ds) {
                                   selected = input$facet)
     })
 
-    shiny::observeEvent(shiny::req(by_source_group_year()), {
-      rng <- c(min(by_source_group_year()[["n"]]),
-               max(by_source_group_year()[["n"]]))
+    shiny::observeEvent(shiny::req(by_facet_group_time()), {
+      rng <- c(min(by_facet_group_time()[["n"]]),
+               max(by_facet_group_time()[["n"]]))
       shiny::updateSliderInput(inputId = "yslider",
                                value = rng,
                                min = rng[1],
@@ -94,11 +97,11 @@ line_server <- function(id, ds) {
     })
 
     output$plot <- plotly::renderPlotly({
-      req(by_source_group_year())
+      req(by_facet_group_time())
       plot <- ggplot2::ggplot(
-        by_source_group_year(),
+        by_facet_group_time(),
         ggplot2::aes(
-          x = year,
+          x = time,
           y = n,
           color = group,
           group = group,
@@ -114,7 +117,6 @@ line_server <- function(id, ds) {
         ggplot2::theme(axis.text.x = ggplot2::element_text(angle = -30, hjust = 0),
                        strip.text.x = ggplot2::element_text(size = 12)) +
         ggplot2::facet_wrap(~ facet) +
-        ggplot2::scale_color_viridis_d(option = "C", drop = FALSE) +
         ggplot2::geom_line() +
         ggplot2::ylim(input$yslider[1], input$yslider[2])
       if (length(dev.list()) > 0) {

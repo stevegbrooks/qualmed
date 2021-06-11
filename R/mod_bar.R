@@ -9,7 +9,7 @@
 
 bar_UI <- function(id) {
   ns <- shiny::NS(id)
-  shiny::tagList(
+  shiny::fluidPage(
     shiny::sidebarLayout(
       position = "right",
       shiny::sidebarPanel(
@@ -23,18 +23,22 @@ bar_UI <- function(id) {
         shiny::selectizeInput(
           ns("facet"),
           label = "Facet variable",
-          choices = "func_dicho",
-          selected = "func_dicho",
+          choices = "is_clinops",
+          selected = "is_clinops",
           multiple = FALSE
+        ),
+        shiny::radioButtons(
+          ns("time"),
+          label = "By year or by month",
+          choices = c("year", "year_month"),
+          selected = "year"
         ),
         width = 2
       ),
       shiny::mainPanel(
-        shiny::fillCol(
-          plotly::plotlyOutput(
-            ns("plot"),
-            width = "auto"
-          )
+        plotly::plotlyOutput(
+          ns("plot"),
+          width = "auto"
         ),
         width = 10
       )
@@ -63,8 +67,9 @@ bar_server <- function(id, ds) {
     by_year_group <- shiny::reactive({
       req(input$facet)
       req(input$group)
+      req(input$time)
       ds() %>%
-        dplyr::count(facet = get(input$facet), year, group = get(input$group)) %>%
+        dplyr::count(facet = get(input$facet), time = get(input$time), group = get(input$group)) %>%
         dplyr::filter(!is.na(group)) %>%
         dplyr::filter(!is.na(facet))
     }) %>% shiny::debounce(1500)
@@ -86,7 +91,7 @@ bar_server <- function(id, ds) {
         ggplot2::aes(
           fill = group,
           y = n,
-          x = year,
+          x = time,
           label = group,
           text = paste("group:", group))
       ) +

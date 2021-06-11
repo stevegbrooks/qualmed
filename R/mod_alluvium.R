@@ -20,9 +20,15 @@ alluvium_UI <- function(id) {
         shiny::selectizeInput(
           ns("group"),
           label = "Select a grouping variable",
-          choices = "func",
-          selected = "func",
+          choices = "Function",
+          selected = "Function",
           multiple = FALSE
+        ),
+        shiny::radioButtons(
+          ns("time"),
+          label = "By year or by month",
+          choices = c("year", "year_month"),
+          selected = "year"
         ),
         width = 2
       ),
@@ -58,10 +64,12 @@ alluvium_server <- function(id, ds) {
   module <- function(input, output, session) {
     ns <- session$ns
 
-    by_year_group <- shiny::reactive({
+    by_time_group <- shiny::reactive({
       shiny::req(input$group)
+      shiny::req(input$time)
       ds() %>%
-        dplyr::count(year, group = get(input$group)) %>%
+        dplyr::count(time = get(input$time),
+                     group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
     }) %>% shiny::debounce(1500)
 
@@ -83,8 +91,8 @@ alluvium_server <- function(id, ds) {
       pdf(file = NULL)
 
       p <- ggplot2::ggplot(
-        data = by_year_group(),
-        ggplot2::aes(x = year, y = n, alluvium = group)
+        data = by_time_group(),
+        ggplot2::aes(x = time, y = n, alluvium = group)
       ) +
         ggalluvial::geom_alluvium(
           ggplot2::aes(fill = group, colour = group),

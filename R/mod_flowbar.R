@@ -58,7 +58,7 @@ flowbar_server <- function(id, ds) {
     by_year_group <- shiny::reactive({
       shiny::req(input$group)
       ds() %>%
-        dplyr::count(year, group = get(input$group)) %>%
+        dplyr::count(time = year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
     }) %>% shiny::debounce(1500)
 
@@ -73,7 +73,7 @@ flowbar_server <- function(id, ds) {
       ggplot2::ggplot(
         data = by_year_group(),
         ggplot2::aes(
-          x = year,
+          x = time,
           y = n,
           stratum = group,
           alluvium = group,
