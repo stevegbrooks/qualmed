@@ -63,18 +63,18 @@ alluvium_UI <- function(id) {
 alluvium_server <- function(id, ds) {
   module <- function(input, output, session) {
     ns <- session$ns
-
+    
     by_time_group <- shiny::reactive({
       shiny::req(input$group)
       shiny::req(input$time)
-      ds() %>%
+      ds()[[1]] %>%
         dplyr::count(time = get(input$time),
                      group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
     }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
-      choices <- sort(names(ds()))
+      choices <- sort(names(ds()[[1]]))
       shiny::updateSelectizeInput(
         inputId = "group",
         choices = choices,
@@ -245,12 +245,12 @@ alluvium_server <- function(id, ds) {
 mod_alluvium <- function(dataset, module_id) {
   mod <- list(
     ui = alluvium_UI,
-    server = rlang::expr(
+    server = function(afmm) {
       qualmed::alluvium_server(
-        !!module_id,
-        ds = shiny::reactive(filtered_datasets()[[!!dataset]])
+        module_id,
+        ds = afmm[["filtered_dataset"]]
       )
-    ),
+    },
     module_id = module_id
   )
   return(mod)

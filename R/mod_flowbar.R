@@ -57,13 +57,13 @@ flowbar_server <- function(id, ds) {
     StatStratum <- ggalluvial::StatStratum
     by_year_group <- shiny::reactive({
       shiny::req(input$group)
-      ds() %>%
+      ds()[[1]] %>%
         dplyr::count(time = year, group = get(input$group)) %>%
         dplyr::filter(!is.na(group))
     }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
-      choices <- sort(names(ds()))
+      choices <- sort(names(ds()[[1]]))
       shiny::updateSelectizeInput(inputId = "group",
                                   choices = choices,
                                   selected = input$group)
@@ -99,16 +99,18 @@ flowbar_server <- function(id, ds) {
   }
   return(shiny::moduleServer(id, module))
 }
+
 #' @export
+#'
 mod_flowbar <- function(dataset, module_id) {
   mod <- list(
     ui = flowbar_UI,
-    server = rlang::expr(
+    server = function(afmm) {
       qualmed::flowbar_server(
-        !!module_id,
-        ds = shiny::reactive(filtered_datasets()[[!!dataset]])
+        module_id,
+        ds = afmm[["filtered_dataset"]]
       )
-    ),
+    },
     module_id = module_id
   )
   return(mod)

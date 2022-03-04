@@ -68,14 +68,14 @@ bar_server <- function(id, ds) {
       req(input$facet)
       req(input$group)
       req(input$time)
-      ds() %>%
+      ds()[[1]] %>%
         dplyr::count(facet = get(input$facet), time = get(input$time), group = get(input$group)) %>%
         dplyr::filter(!is.na(group)) %>%
         dplyr::filter(!is.na(facet))
     }) %>% shiny::debounce(1500)
 
     shiny::observeEvent(ds(), {
-      choices <- sort(names(ds()))
+      choices <- sort(names(ds()[[1]]))
       shiny::updateSelectizeInput(inputId = "group",
                                   choices = choices,
                                   selected = input$group)
@@ -122,12 +122,12 @@ bar_server <- function(id, ds) {
 mod_bar <- function(dataset, module_id) {
   mod <- list(
     ui = bar_UI,
-    server = rlang::expr(
+    server = function(afmm) {
       qualmed::bar_server(
-        !!module_id,
-        ds = shiny::reactive(filtered_datasets()[[!!dataset]])
+        module_id,
+        ds = afmm[["filtered_dataset"]]
       )
-    ),
+    },
     module_id = module_id
   )
   return(mod)
